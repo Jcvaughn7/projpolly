@@ -1,31 +1,42 @@
-name: Pull Request Workflow
+name: Python Pull Request Workflow
 
 on:
   pull_request:
     branches:
-      - main
+      - main  # Only trigger if PR targets 'main' branch
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          pip install --upgrade pip
+          pip install boto3
           
 
-      - name: Run Python script
+      - name: Run tests
         run: |
-          python your_script.py
+          pytest
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # or your preferred region
+
+      - name: Run Polly script
+        run: python your_script.py  # this generates polly-audio/beta.mp3
 
       - name: Upload MP3 output
         uses: actions/upload-artifact@v4
