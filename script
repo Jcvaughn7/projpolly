@@ -1,0 +1,28 @@
+import boto3
+
+# Configuration
+bucket_name = "my-project-bucket-jeffrey-luit-1"         
+file_key = "speech.txt"                 
+output_file = "output.mp3"               
+region = "us-east-1"                     
+
+# Create AWS clients
+s3 = boto3.client("s3", region_name=region)
+polly = boto3.client("polly", region_name=region)
+
+# Step 1: Download the file from S3
+response = s3.get_object(Bucket=bucket_name, Key=file_key)
+text = response['Body'].read().decode('utf-8')
+
+# Step 2: Send text to Polly
+polly_response = polly.synthesize_speech(
+    Text=text,
+    OutputFormat='mp3',
+    VoiceId='Joanna'  # or 'Matthew', 'Amy', etc.
+)
+
+# Step 3: Save audio to local file
+with open(output_file, 'wb') as file:
+    file.write(polly_response['AudioStream'].read())
+
+print(f"✅ Audio file saved as '{output_file}'")
